@@ -1,0 +1,21 @@
+development:
+  backend: memory
+  host: localhost
+  port: 6666
+  haystack: http://localhost:9393/async
+  workers: 0
+  raise_errors: true
+
+test:
+  backend: memory
+  host: localhost
+  port: 6666
+  haystack: http://localhost:9393/async
+  workers: 0
+  raise_errors: true
+
+production:
+  backend: haystack
+  workers: 1
+  raise_errors: false
+
