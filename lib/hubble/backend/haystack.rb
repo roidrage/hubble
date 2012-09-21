@@ -1,3 +1,5 @@
+require 'faraday'
+
 module Hubble::Backend
   class Haystack
     def initialize(url)
@@ -26,20 +28,25 @@ module Hubble::Backend
 
     def send_data(data)
       # make a post
+      http_client.post do |req|
+        req.body = { 'json' => JSON.dump(data) }
+      end
+    end
 
-      post = Net::HTTP::Post.new(@url.path)
-      post.set_form_data('json' => JSON.dump(data))
+    def http_client
+      Faraday.new(@url, http_options) do |f|
+        f.request :url_encoded
+        f.adapter :net_http
+        f.basic_auth(user, password) if password?
+      end
+    end
 
-      post.basic_auth(user, password) if password?
-
-      # make request
-      req = Net::HTTP.new(@url.host, @url.port)
-
-      # use SSL if applicable
-      req.use_ssl = true if @url.scheme == "https"
-
-      # push it through
-      req.start { |http| http.request(post) }
+    def http_options
+      if Hubble.config['ssl']
+        { :ssl => Hubble.config['ssl'] }
+      else
+        { }
+      end
     end
   end
 end
